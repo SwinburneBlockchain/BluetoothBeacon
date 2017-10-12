@@ -12,55 +12,54 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import static com.swinblockchain.bluetoothbeacon.R.id.producerName;
+
 public class AdminActivity extends AppCompatActivity {
 
-    private ArrayList<Producer> producerList;
-    Console console;
+    private ArrayList<String> producerNameList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin);
 
-         console = getIntent().getParcelableExtra("console");
+        producerNameList = getIntent().getExtras().getStringArrayList("producerNameList");
         displayProducers();
     }
 
     private void displayProducers() {
-        for (Producer p : console.getProducerList()) {
-            createTableRow(p);
+        for (String  s : producerNameList) {
+            createTableRow(s);
         }
     }
 
-    private void createTableRow(final Producer p) {
+    private void createTableRow(final String s) {
 
         final TableLayout detailsTable = (TableLayout) findViewById(R.id.mainTable);
         final TableRow tableRow = (TableRow) getLayoutInflater().inflate(R.layout.tablerow, null);
 
         TextView tv;
         tv = (TextView) tableRow.findViewById(R.id.informationCell);
-        tv.setText(p.getName() + "\nPublic Key:" + p.getPubKey());
+        tv.setText(s);
 
         Button button = (Button) tableRow.findViewById(R.id.buttonSave);
 
         button.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View v) {
-                console.setProducer(p);
-                backToMain();
+            @Override
+            public void onClick(View v) {
+                backToMain(s);
             }
         });
         detailsTable.addView(tableRow);
     }
 
     public void newProducerSave(View view) {
-        Producer newProducer = console.generateKeyPair(findViewById(R.id.producerName).toString());
-        console.producerList.add(newProducer);
-        console.setProducer(newProducer);
-        backToMain();
+        backToMain(findViewById(R.id.producerName).toString());
     }
 
-    private void backToMain() {
+    private void backToMain(String producerName) {
         Intent i = new Intent(AdminActivity.this, MainActivity.class);
+        i.putExtra("producerName", producerName);
         startActivity(i);
     }
 }

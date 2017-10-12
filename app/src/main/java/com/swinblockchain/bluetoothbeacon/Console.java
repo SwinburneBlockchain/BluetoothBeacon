@@ -65,7 +65,7 @@ public class Console {
         this.producer = producer;
     }
 
-    public void setConsoleWindow(TextView consoleWindow) {
-        this.consoleWindow = consoleWindow;
+    public void log(String message) {
+        consoleWindow.append(message + "\n");
     }
 }

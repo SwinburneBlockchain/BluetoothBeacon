@@ -1,5 +1,7 @@
 package com.swinblockchain.bluetoothbeacon;
 
+import android.os.Parcel;
+
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
