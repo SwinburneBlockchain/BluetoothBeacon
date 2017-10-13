@@ -1,4 +1,4 @@
-package com.swinblockchain.bluetoothbeacon;
+package com.swinblockchain.bluetoothbeacon.Model;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;

@@ -1,14 +1,15 @@
-package com.swinblockchain.bluetoothbeacon;
+package com.swinblockchain.bluetoothbeacon.UI;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+
+import com.swinblockchain.bluetoothbeacon.R;
 
 import java.util.ArrayList;
 

@@ -1,4 +1,4 @@
-package com.swinblockchain.bluetoothbeacon;
+package com.swinblockchain.bluetoothbeacon.UI;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -6,7 +6,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
-import java.util.ArrayList;
+import com.swinblockchain.bluetoothbeacon.Controller.Console;
+import com.swinblockchain.bluetoothbeacon.R;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
         //manageProducers();
         console.loadKeyFiles();
 
-        console.signMessage(console.getProducerList().get(0).getPrivKey(), console.getProducerList().get(0).getPubKey());
+        byte[] signature = console.signMessage(console.getProducerList().get(0).getPrivKey(), console.getProducerList().get(0).getPubKey());
     }
 
     public void startAdmin(View view) {

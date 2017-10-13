@@ -1,32 +1,18 @@
-package com.swinblockchain.bluetoothbeacon;
+package com.swinblockchain.bluetoothbeacon.Controller;
 
 import android.content.res.AssetManager;
 
-import android.location.Location;
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.provider.MediaStore;
-import android.util.Base64;
 import android.widget.TextView;
 
+import com.swinblockchain.bluetoothbeacon.App;
+import com.swinblockchain.bluetoothbeacon.Model.Producer;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Writer;
+
 import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.Security;
 import java.security.Signature;
-import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
@@ -47,7 +33,7 @@ public class Console {
         this.consoleWindow = consoleWindow;
     }
 
-    public void signMessage(PrivateKey privateKey, PublicKey publicKey) {
+    public byte[] signMessage(PrivateKey privateKey, PublicKey publicKey) {
         try {
             Signature sig = Signature.getInstance("SHA256withRSA");
             byte[] data = message.getBytes("UTF8");
@@ -63,9 +49,11 @@ public class Console {
             sig.update(data);
 
             System.out.println(sig.verify(signatureBytes));
+            return signatureBytes;
 
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
     }
 
