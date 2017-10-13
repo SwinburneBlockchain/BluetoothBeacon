@@ -12,8 +12,6 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import static com.swinblockchain.bluetoothbeacon.R.id.producerName;
-
 public class AdminActivity extends AppCompatActivity {
 
     private ArrayList<String> producerNameList;
@@ -29,7 +27,7 @@ public class AdminActivity extends AppCompatActivity {
 
     private void displayProducers() {
         for (String  s : producerNameList) {
-            createTableRow(s);
+            createTableRow(s.toString());
         }
     }
 
@@ -51,10 +49,6 @@ public class AdminActivity extends AppCompatActivity {
             }
         });
         detailsTable.addView(tableRow);
-    }
-
-    public void newProducerSave(View view) {
-        backToMain(findViewById(R.id.producerName).toString());
     }
 
     private void backToMain(String producerName) {
