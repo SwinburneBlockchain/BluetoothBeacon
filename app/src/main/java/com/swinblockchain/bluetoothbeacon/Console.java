@@ -11,10 +11,12 @@ import android.widget.TextView;
 
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -29,11 +31,6 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 
-import static android.R.attr.key;
-import static android.R.attr.path;
-import static android.R.id.message;
-import static android.provider.Telephony.Mms.Part.FILENAME;
-
 /**
  * Created by John on 12/10/2017.
  */
@@ -42,6 +39,7 @@ public class Console {
 
     private Producer producer;
     TextView consoleWindow;
+    private final String message = "VALID_LOCATION";
 
     ArrayList<Producer> producerList = new ArrayList<>();
 
@@ -49,19 +47,24 @@ public class Console {
         this.consoleWindow = consoleWindow;
     }
 
-    public byte[] signMessage(String message) {
-
+    public void signMessage(PrivateKey privateKey, PublicKey publicKey) {
         try {
-            Signature dsa = Signature.getInstance("SHA1withDSA", "SUN");
-            dsa.initSign(producer.getPrivKey());
+            Signature sig = Signature.getInstance("SHA256withRSA");
+            byte[] data = message.getBytes("UTF8");
 
-            dsa.update(message.getBytes());
+            sig.initSign(privateKey);
+            sig.update(data);
 
-            byte[] realSig = dsa.sign();
+            byte[] signatureBytes = sig.sign();
+            System.out.println("Singature:" + signatureBytes);
 
-            return realSig;
+            sig.initVerify(publicKey);
+            sig.update(data);
+
+            System.out.println(sig.verify(signatureBytes));
+
         } catch (Exception e) {
-            return null;
+            e.printStackTrace();
         }
     }
 
@@ -77,6 +80,7 @@ public class Console {
     public void loadKeyFiles() {
         AssetManager assetManager = App.getContext().getAssets();
         InputStream input;
+        Producer prod;
 
         try {
             String[] list = assetManager.list("");
@@ -86,45 +90,44 @@ public class Console {
                     String[] keyFileArr = keyFile.split("\\.");
                     if (keyFileArr[1].equals("key") || keyFileArr[1].equals("pub")) {
                         if (findProducer(keyFileArr[0]) == null) {
-                            Producer newProd = new Producer(keyFileArr[0]);
-                            producerList.add(newProd);
+                            prod = new Producer(keyFileArr[0]);
+                            producerList.add(prod);
+                        } else {
+                            prod = findProducer(keyFileArr[0]);
+                        }
+                        /* Read all bytes from the private key file */
+                        input = assetManager.open(keyFile);
+                        byte[] bytes = new byte[input.available()];
+                        input.read(bytes);
+                        input.close();
 
-                    /* Read all bytes from the private key file */
-                            input = assetManager.open(keyFile);
-                            byte[] bytes = new byte[input.available()];
-                            input.read(bytes);
-                            input.close();
-
-                            try {
+                        try {
                         /* Generate key. */
 
-                                if (keyFileArr[1].equals("key")) {
-                                    PKCS8EncodedKeySpec ks = new PKCS8EncodedKeySpec(bytes);
-                                    KeyFactory kf = KeyFactory.getInstance("RSA");
-                                    PrivateKey pvt = kf.generatePrivate(ks);
-                                    newProd.setPrivKey(pvt);
+                            if (keyFileArr[1].equals("key")) {
+                                PKCS8EncodedKeySpec ks = new PKCS8EncodedKeySpec(bytes);
+                                KeyFactory kf = KeyFactory.getInstance("RSA");
+                                PrivateKey pvt = kf.generatePrivate(ks);
+                                prod.setPrivKey(pvt);
 
-                                } else if (keyFileArr[1].equals("pub")) {
-                                    X509EncodedKeySpec ks = new X509EncodedKeySpec(bytes);
-                                    KeyFactory kf = KeyFactory.getInstance("RSA");
-                                    PublicKey pub = kf.generatePublic(ks);
-                                    newProd.setPubKey(pub);
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
+                            } else if (keyFileArr[1].equals("pub")) {
+                                X509EncodedKeySpec ks = new X509EncodedKeySpec(bytes);
+                                KeyFactory kf = KeyFactory.getInstance("RSA");
+                                PublicKey pub = kf.generatePublic(ks);
+                                prod.setPubKey(pub);
                             }
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
                     }
                 }
-
-                System.out.println();
             }
-        } catch (
-                IOException e)
+        } catch (Exception e)
 
         {
             e.printStackTrace();
         }
+
     }
 
     public Producer getProducer() {
@@ -133,6 +136,14 @@ public class Console {
 
     public void setProducer(Producer producer) {
         this.producer = producer;
+    }
+
+    public ArrayList<Producer> getProducerList() {
+        return producerList;
+    }
+
+    public void setProducerList(ArrayList<Producer> producerList) {
+        this.producerList = producerList;
     }
 
     public void log(String message) {

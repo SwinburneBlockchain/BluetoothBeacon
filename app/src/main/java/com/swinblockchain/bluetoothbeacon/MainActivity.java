@@ -22,6 +22,8 @@ public class MainActivity extends AppCompatActivity {
 
         //manageProducers();
         console.loadKeyFiles();
+
+        console.signMessage(console.getProducerList().get(0).getPrivKey(), console.getProducerList().get(0).getPubKey());
     }
 
     public void startAdmin(View view) {
