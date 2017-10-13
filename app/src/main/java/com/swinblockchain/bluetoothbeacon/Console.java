@@ -56,7 +56,8 @@ public class Console {
             sig.update(data);
 
             byte[] signatureBytes = sig.sign();
-            System.out.println("Singature:" + signatureBytes);
+            System.out.println("SIG UTF-8: " + signatureBytes.toString());
+
 
             sig.initVerify(publicKey);
             sig.update(data);
@@ -122,9 +123,7 @@ public class Console {
                     }
                 }
             }
-        } catch (Exception e)
-
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
