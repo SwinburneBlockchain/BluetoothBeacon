@@ -9,8 +9,12 @@ import android.widget.TextView;
 import com.swinblockchain.bluetoothbeacon.App;
 import com.swinblockchain.bluetoothbeacon.Model.Producer;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.InputStream;
 
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -19,6 +23,8 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 
+import static android.R.attr.data;
+import static android.R.attr.key;
 import static android.R.attr.publicKey;
 
 /**
@@ -40,7 +46,7 @@ public class Console {
         this.consoleWindow = consoleWindow;
     }
 
-    public byte[] signMessage(Producer p) {
+    public String signMessage(Producer p) {
         try {
             Signature sig = Signature.getInstance("SHA256withRSA");
             byte[] data = message.getBytes("UTF8");
@@ -50,17 +56,11 @@ public class Console {
 
             byte[] signatureBytes = sig.sign();
 
-            System.out.println("SIGN IN :" + signatureBytes);
-            System.out.println("SIGN IN HEX:" + bytesToHex(signatureBytes));
-
-            System.out.println("SIG UTF-8: " + signatureBytes.toString());
-
-
             sig.initVerify(p.getPubKeyDER());
             sig.update(data);
 
             System.out.println(sig.verify(signatureBytes));
-            return signatureBytes;
+            return bytesToHex(signatureBytes);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -79,45 +79,66 @@ public class Console {
             for (String keyFile : list) {
                 if (keyFile.contains(".")) {
                     String[] keyFileArr = keyFile.split("\\.");
-                    if (keyFileArr[2].equals("der") || keyFileArr[2].equals("pem")) {
-                        if (findProducer(keyFileArr[0]) == null) {
-                            prod = new Producer(keyFileArr[0]);
-                            producerList.add(prod);
-                            producerStringList.add(keyFileArr[0]);
-                        } else {
-                            prod = findProducer(keyFileArr[0]);
-                        }
-                        /* Read all bytes from the private key file */
-                        input = assetManager.open(keyFile);
-                        byte[] bytes = new byte[input.available()];
-                        input.read(bytes);
-                        input.close();
+                    if (keyFileArr.length == 3) {
+                        if (keyFileArr[2].equals("der") || keyFileArr[2].equals("pem")) {
+                            if (findProducer(keyFileArr[0]) == null) {
+                                prod = new Producer(keyFileArr[0]);
+                                producerList.add(prod);
+                                producerStringList.add(keyFileArr[0]);
+                            } else {
+                                prod = findProducer(keyFileArr[0]);
+                            }
 
-                        try {
+                            try {
                         /* Generate key. */
 
-                            if (keyFileArr[2].equals("pem")) {
-                                if (keyFileArr[1].equals("private")) {
-                                    prod.setPrivKeyPEMString(keyFileArr[1]);
-                                } else if (keyFileArr[1].equals("public"))
-                                    prod.setPubKeyPEMString(keyFileArr[1]);
-                            }
-                            if (keyFileArr[2].equals("der")) {
-                                if (keyFileArr[1].equals("private")) {
-                                    PKCS8EncodedKeySpec ks = new PKCS8EncodedKeySpec(bytes);
-                                    KeyFactory kf = KeyFactory.getInstance("RSA");
-                                    PrivateKey pvt = kf.generatePrivate(ks);
-                                    prod.setPrivKeyDER(pvt);
+                                if (keyFileArr[2].equals("pem")) {
 
-                                } else if (keyFileArr[1].equals("pub")) {
-                                    X509EncodedKeySpec ks = new X509EncodedKeySpec(bytes);
-                                    KeyFactory kf = KeyFactory.getInstance("RSA");
-                                    PublicKey pub = kf.generatePublic(ks);
-                                    prod.setPubKeyDER(pub);
+                                    input = assetManager.open(keyFile);
+                                    BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+                                    String temp = reader.readLine();
+                                    StringBuilder fullKey = new StringBuilder("");
+                                    while (temp != null) {
+                                        try {
+                                            // Skip commented lines in csv
+                                            if (!temp.substring(0, 2).equals("//")) {
+                                                fullKey.append(temp);
+                                            }
+                                        } catch (Exception e) {
+
+                                        }
+                                        temp = reader.readLine();
+                                    }
+                                    reader.close();
+
+                                    if (keyFileArr[1].equals("private")) {
+                                        prod.setPrivKeyPEMString(fullKey.toString());
+                                    } else if (keyFileArr[1].equals("public"))
+                                        prod.setPubKeyPEMString(fullKey.toString());
                                 }
+                                if (keyFileArr[2].equals("der")) {
+                            /* Read all bytes from the private key file */
+                                    input = assetManager.open(keyFile);
+                                    byte[] bytes = new byte[input.available()];
+                                    input.read(bytes);
+                                    input.close();
+
+                                    if (keyFileArr[1].equals("private")) {
+                                        PKCS8EncodedKeySpec ks = new PKCS8EncodedKeySpec(bytes);
+                                        KeyFactory kf = KeyFactory.getInstance("RSA");
+                                        PrivateKey pvt = kf.generatePrivate(ks);
+                                        prod.setPrivKeyDER(pvt);
+
+                                    } else if (keyFileArr[1].equals("public")) {
+                                        X509EncodedKeySpec ks = new X509EncodedKeySpec(bytes);
+                                        KeyFactory kf = KeyFactory.getInstance("RSA");
+                                        PublicKey pub = kf.generatePublic(ks);
+                                        prod.setPubKeyDER(pub);
+                                    }
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
-                        } catch (Exception e) {
-                            e.printStackTrace();
                         }
                     }
                 }

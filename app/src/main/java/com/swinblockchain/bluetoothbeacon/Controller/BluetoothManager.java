@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.Set;
 import java.util.UUID;
 
@@ -30,7 +31,7 @@ public class BluetoothManager {
     public static Console myConsole;
     String NAME;
     UUID MY_UUID;
-    Message msg = Message.obtain();
+    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 
     public BluetoothManager(Console console, String NAME, UUID MY_UUID) {
         this.myConsole = console;
@@ -47,7 +48,7 @@ public class BluetoothManager {
     private Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
-            myConsole.writeToConsole(msg.getData().getString("msg"));
+            myConsole.writeToConsole(sdf.format(System.currentTimeMillis()) + " " + msg.getData().getString("msg"));
             return true;
         }
 
@@ -108,13 +109,12 @@ public class BluetoothManager {
                         output("Received request for proof of location");
 
                         output("Signing message and timestamp");
-                        //Generate sig //TODO
+                        String sign = console.signMessage(console.getProducer());
 
                         output("Sending response");
                         PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
-                        socket.getOutputStream().write(console.signMessage(console.getProducer()));
+                        out.println(sign + "," + console.getProducer().getPubKeyPEMString());
 
-                        //output("Hi from Bluetooth Demo Server"); //Message to
                         out.flush();
                         output("Response sent");
 

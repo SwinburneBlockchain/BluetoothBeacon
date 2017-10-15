@@ -27,7 +27,7 @@ public class AdminActivity extends AppCompatActivity {
     }
 
     private void displayProducers() {
-        for (String  s : producerNameList) {
+        for (String s : producerNameList) {
             createTableRow(s.toString());
         }
     }
