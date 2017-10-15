@@ -22,7 +22,7 @@ public class AdminActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin);
 
-        producerNameList = getIntent().getExtras().getStringArrayList("producerNameList");
+        producerNameList = getIntent().getExtras().getStringArrayList("producerList");
         displayProducers();
     }
 

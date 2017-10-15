@@ -24,10 +24,11 @@ import java.util.ArrayList;
 public class Console {
 
     private Producer producer;
-    TextView consoleWindow;
+    private TextView consoleWindow;
     private final String message = "VALID_LOCATION";
 
     ArrayList<Producer> producerList = new ArrayList<>();
+    ArrayList<String> producerStringList = new ArrayList<>();
 
     public Console(TextView consoleWindow) {
         this.consoleWindow = consoleWindow;
@@ -57,15 +58,6 @@ public class Console {
         }
     }
 
-    private Producer findProducer(String producerName) {
-        for (Producer p : producerList) {
-            if (p.getName().equals(producerName)) {
-                return p;
-            }
-        }
-        return null;
-    }
-
     public void loadKeyFiles() {
         AssetManager assetManager = App.getContext().getAssets();
         InputStream input;
@@ -81,6 +73,7 @@ public class Console {
                         if (findProducer(keyFileArr[0]) == null) {
                             prod = new Producer(keyFileArr[0]);
                             producerList.add(prod);
+                            producerStringList.add(keyFileArr[0]);
                         } else {
                             prod = findProducer(keyFileArr[0]);
                         }
@@ -115,6 +108,18 @@ public class Console {
             e.printStackTrace();
         }
 
+        if (producerList.size() != 0) {
+            producer = producerList.get(0); // Default producer
+        }
+    }
+
+    public Producer findProducer(String producerName) {
+        for (Producer p : producerList) {
+            if (producerName.equals(p.getName())) {
+                return p;
+            }
+        }
+        return null;
     }
 
     public Producer getProducer() {
@@ -135,5 +140,13 @@ public class Console {
 
     public void log(String message) {
         consoleWindow.append(message + "\n");
+    }
+
+    public ArrayList<String> getProducerStringList() {
+        return producerStringList;
+    }
+
+    public void setProducerStringList(ArrayList<String> producerStringList) {
+        this.producerStringList = producerStringList;
     }
 }

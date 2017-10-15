@@ -14,6 +14,7 @@ import com.swinblockchain.bluetoothbeacon.R;
 public class MainActivity extends AppCompatActivity {
 
     Console console;
+    TextView producerName;
 
 
     @Override
@@ -22,9 +23,19 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         console = new Console((TextView) findViewById(R.id.consoleWindow));
-
-        //manageProducers();
+        producerName = (TextView) findViewById(R.id.producerName);
         console.loadKeyFiles();
+
+        Intent intent = getIntent();
+        Bundle extras = intent.getExtras();
+        if (extras != null) {
+            if (extras.containsKey("producerName")) {
+                console.setProducer(console.findProducer(extras.getString("producerName")));
+                producerName.setText("Producer: " + extras.getString("producerName"));
+            }
+        }
+        
+        producerName.setText("Producer: " + console.getProducer().getName());
 
         //byte[] signature = console.signMessage(console.getProducerList().get(0).getPrivKey(), console.getProducerList().get(0).getPubKey());
 
@@ -37,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void startAdmin(View view) {
         Intent i = new Intent(MainActivity.this, AdminActivity.class);
+        i.putStringArrayListExtra("producerList", console.getProducerStringList());
         startActivity(i);
     }
 
