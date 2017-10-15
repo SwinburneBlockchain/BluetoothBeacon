@@ -77,7 +77,7 @@ public class BluetoothManager {
             this.console = myConsole;
             // Create a new listening server socket
             try {
-                console.getConsoleWindow().append("Starting server\n");
+                console.getConsoleWindow().append("Starting server for " + console.getProducer().getName() + "\n");
                 tmp = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(NAME, MY_UUID);
             } catch (IOException e) {
                 console.getConsoleWindow().append("Failed to start server\n");
@@ -132,7 +132,7 @@ public class BluetoothManager {
                 } else {
                     output("Made connection, but socket is null");
                 }
-                //messageHandler.sendMessage("ser");
+
                 output("Server closing\n");
             }
         }

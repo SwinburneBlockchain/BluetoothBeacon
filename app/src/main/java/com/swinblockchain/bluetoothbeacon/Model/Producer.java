@@ -13,13 +13,17 @@ import java.util.List;
 public class Producer {
 
     String name;
-    PublicKey pubKey;
-    PrivateKey privKey;
+    PublicKey pubKeyDER;
+    PrivateKey privKeyDER;
+    String pubKeyPEMString;
+    String privKeyPEMString;
 
-    public Producer(String name, PublicKey pubKey, PrivateKey privKey) {
+    public Producer(String name, PublicKey pubKeyDER, PrivateKey privKeyDER, String pubKeyPEMString, String privKeyPEMString) {
         this.name = name;
-        this.pubKey = pubKey;
-        this.privKey = privKey;
+        this.pubKeyDER = pubKeyDER;
+        this.privKeyDER = privKeyDER;
+        this.pubKeyPEMString = pubKeyPEMString;
+        this.privKeyPEMString = privKeyPEMString;
     }
 
     public Producer(String name) {
@@ -34,19 +38,35 @@ public class Producer {
         this.name = name;
     }
 
-    public PublicKey getPubKey() {
-        return pubKey;
+    public PublicKey getPubKeyDER() {
+        return pubKeyDER;
     }
 
-    public void setPubKey(PublicKey pubKey) {
-        this.pubKey = pubKey;
+    public void setPubKeyDER(PublicKey pubKeyDER) {
+        this.pubKeyDER = pubKeyDER;
     }
 
-    public PrivateKey getPrivKey() {
-        return privKey;
+    public PrivateKey getPrivKeyDER() {
+        return privKeyDER;
     }
 
-    public void setPrivKey(PrivateKey privKey) {
-        this.privKey = privKey;
+    public void setPrivKeyDER(PrivateKey privKeyDER) {
+        this.privKeyDER = privKeyDER;
+    }
+
+    public String getPubKeyPEMString() {
+        return pubKeyPEMString;
+    }
+
+    public void setPubKeyPEMString(String pubKeyPEMString) {
+        this.pubKeyPEMString = pubKeyPEMString;
+    }
+
+    public String getPrivKeyPEMString() {
+        return privKeyPEMString;
+    }
+
+    public void setPrivKeyPEMString(String privKeyPEMString) {
+        this.privKeyPEMString = privKeyPEMString;
     }
 }

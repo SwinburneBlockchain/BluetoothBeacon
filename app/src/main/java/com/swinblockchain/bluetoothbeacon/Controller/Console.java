@@ -45,7 +45,7 @@ public class Console {
             Signature sig = Signature.getInstance("SHA256withRSA");
             byte[] data = message.getBytes("UTF8");
 
-            sig.initSign(p.getPrivKey());
+            sig.initSign(p.getPrivKeyDER());
             sig.update(data);
 
             byte[] signatureBytes = sig.sign();
@@ -56,7 +56,7 @@ public class Console {
             System.out.println("SIG UTF-8: " + signatureBytes.toString());
 
 
-            sig.initVerify(p.getPubKey());
+            sig.initVerify(p.getPubKeyDER());
             sig.update(data);
 
             System.out.println(sig.verify(signatureBytes));
@@ -79,7 +79,7 @@ public class Console {
             for (String keyFile : list) {
                 if (keyFile.contains(".")) {
                     String[] keyFileArr = keyFile.split("\\.");
-                    if (keyFileArr[1].equals("key") || keyFileArr[1].equals("pub")) {
+                    if (keyFileArr[2].equals("der") || keyFileArr[2].equals("pem")) {
                         if (findProducer(keyFileArr[0]) == null) {
                             prod = new Producer(keyFileArr[0]);
                             producerList.add(prod);
@@ -96,17 +96,25 @@ public class Console {
                         try {
                         /* Generate key. */
 
-                            if (keyFileArr[1].equals("key")) {
-                                PKCS8EncodedKeySpec ks = new PKCS8EncodedKeySpec(bytes);
-                                KeyFactory kf = KeyFactory.getInstance("RSA");
-                                PrivateKey pvt = kf.generatePrivate(ks);
-                                prod.setPrivKey(pvt);
+                            if (keyFileArr[2].equals("pem")) {
+                                if (keyFileArr[1].equals("private")) {
+                                    prod.setPrivKeyPEMString(keyFileArr[1]);
+                                } else if (keyFileArr[1].equals("public"))
+                                    prod.setPubKeyPEMString(keyFileArr[1]);
+                            }
+                            if (keyFileArr[2].equals("der")) {
+                                if (keyFileArr[1].equals("private")) {
+                                    PKCS8EncodedKeySpec ks = new PKCS8EncodedKeySpec(bytes);
+                                    KeyFactory kf = KeyFactory.getInstance("RSA");
+                                    PrivateKey pvt = kf.generatePrivate(ks);
+                                    prod.setPrivKeyDER(pvt);
 
-                            } else if (keyFileArr[1].equals("pub")) {
-                                X509EncodedKeySpec ks = new X509EncodedKeySpec(bytes);
-                                KeyFactory kf = KeyFactory.getInstance("RSA");
-                                PublicKey pub = kf.generatePublic(ks);
-                                prod.setPubKey(pub);
+                                } else if (keyFileArr[1].equals("pub")) {
+                                    X509EncodedKeySpec ks = new X509EncodedKeySpec(bytes);
+                                    KeyFactory kf = KeyFactory.getInstance("RSA");
+                                    PublicKey pub = kf.generatePublic(ks);
+                                    prod.setPubKeyDER(pub);
+                                }
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -134,7 +142,7 @@ public class Console {
 
     public String bytesToHex(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
-        for ( int j = 0; j < bytes.length; j++ ) {
+        for (int j = 0; j < bytes.length; j++) {
             int v = bytes[j] & 0xFF;
             hexChars[j * 2] = hexArray[v >>> 4];
             hexChars[j * 2 + 1] = hexArray[v & 0x0F];
