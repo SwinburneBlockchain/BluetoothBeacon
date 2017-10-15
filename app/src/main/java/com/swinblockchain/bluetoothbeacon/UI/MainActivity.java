@@ -7,15 +7,18 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.swinblockchain.bluetoothbeacon.Controller.BluetoothManager;
-import com.swinblockchain.bluetoothbeacon.Controller.BluetoothMessaging;
 import com.swinblockchain.bluetoothbeacon.Controller.Console;
 import com.swinblockchain.bluetoothbeacon.R;
+
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
     Console console;
     TextView producerName;
 
+    public static final UUID MY_UUID = UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a66");
+    public static final String NAME = "ProductChain";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,16 +37,17 @@ public class MainActivity extends AppCompatActivity {
                 producerName.setText("Producer: " + extras.getString("producerName"));
             }
         }
-        
+
         producerName.setText("Producer: " + console.getProducer().getName());
 
         //byte[] signature = console.signMessage(console.getProducerList().get(0).getPrivKey(), console.getProducerList().get(0).getPubKey());
 
-        initiateBluetooth();
+        BluetoothManager bt = new BluetoothManager(console, NAME, MY_UUID);
+        bt.startBluetoothServer();
     }
 
     private void initiateBluetooth() {
-        BluetoothMessaging btMsg = new BluetoothMessaging();
+
     }
 
     public void startAdmin(View view) {

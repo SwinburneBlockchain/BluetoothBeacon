@@ -17,6 +17,8 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 
+import static android.R.attr.publicKey;
+
 /**
  * Created by John on 12/10/2017.
  */
@@ -34,19 +36,19 @@ public class Console {
         this.consoleWindow = consoleWindow;
     }
 
-    public byte[] signMessage(PrivateKey privateKey, PublicKey publicKey) {
+    public byte[] signMessage(Producer p) {
         try {
             Signature sig = Signature.getInstance("SHA256withRSA");
             byte[] data = message.getBytes("UTF8");
 
-            sig.initSign(privateKey);
+            sig.initSign(p.getPrivKey());
             sig.update(data);
 
             byte[] signatureBytes = sig.sign();
             System.out.println("SIG UTF-8: " + signatureBytes.toString());
 
 
-            sig.initVerify(publicKey);
+            sig.initVerify(p.getPubKey());
             sig.update(data);
 
             System.out.println(sig.verify(signatureBytes));
@@ -148,5 +150,13 @@ public class Console {
 
     public void setProducerStringList(ArrayList<String> producerStringList) {
         this.producerStringList = producerStringList;
+    }
+
+    public TextView getConsoleWindow() {
+        return consoleWindow;
+    }
+
+    public void setConsoleWindow(TextView consoleWindow) {
+        this.consoleWindow = consoleWindow;
     }
 }
