@@ -18,15 +18,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.Fragment;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.TextView;
 
-import com.swinblockchain.bluetoothbeacon.UI.MainActivity;
 
 /**
  * Created by John on 13/10/2017.
@@ -35,12 +27,13 @@ import com.swinblockchain.bluetoothbeacon.UI.MainActivity;
 public class BluetoothManager {
 
     BluetoothAdapter mBluetoothAdapter = null;
-    Console console;
+    public static Console myConsole;
     String NAME;
     UUID MY_UUID;
+    Message msg = Message.obtain();
 
-    public BluetoothManager(Console console, String NAME, UUID MY_UUID){
-        this.console = console;
+    public BluetoothManager(Console console, String NAME, UUID MY_UUID) {
+        this.myConsole = console;
         this.NAME = NAME;
         this.MY_UUID = MY_UUID;
     }
@@ -48,95 +41,109 @@ public class BluetoothManager {
     public void startBluetoothServer() {
         //setup the bluetooth adapter.
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (mBluetoothAdapter == null) {
-//TODO
-        }
-
-        startServer();
+        startServer(myConsole);
     }
 
-    private void startServer() {
-        new Thread(new AcceptThread()).start();
+    private Handler handler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            myConsole.writeToConsole(msg.getData().getString("msg"));
+            return true;
+        }
+
+    });
+
+    public void output(String str) {
+        //handler junk, because thread can't update screen!
+        Message msg = new Message();
+        Bundle b = new Bundle();
+        b.putString("msg", str);
+        msg.setData(b);
+        handler.sendMessage(msg);
+    }
+
+
+    private void startServer(Console myConsole) {
+        new Thread(new AcceptThread(myConsole)).start();
     }
 
     private class AcceptThread extends Thread {
         // The local server socket
         private final BluetoothServerSocket mmServerSocket;
+        private Console console;
 
-        public AcceptThread() {
+        public AcceptThread(Console myConsole) {
             BluetoothServerSocket tmp = null;
+            this.console = myConsole;
             // Create a new listening server socket
             try {
+                console.getConsoleWindow().append("Starting server\n");
                 tmp = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(NAME, MY_UUID);
             } catch (IOException e) {
-                mkmsg("Failed to start server\n");
+                console.getConsoleWindow().append("Failed to start server\n");
             }
             mmServerSocket = tmp;
         }
 
-        public void mkmsg(String str) {
-            //handler junk, because thread can't update screen!
-            Message msg = new Message();
-            Bundle b = new Bundle();
-            b.putString("msg", str);
-            msg.setData(b);
-            System.out.println("SYSOUT:" + str);
-        }
-
         public void run() {
-            mkmsg("waiting on accept");
-            BluetoothSocket socket = null;
-            try {
-                // This is a blocking call and will only return on a
-                // successful connection or an exception
-                socket = mmServerSocket.accept();
-            } catch (IOException e) {
-                mkmsg("Failed to accept\n");
-            }
+            while (true) {
+                output("Listening for connection");
 
-            // If a connection was accepted
-            if (socket != null) {
-                mkmsg("Connection made\n");
-                mkmsg("Remote device address: " + socket.getRemoteDevice().getAddress() + "\n");
-                //Note this is copied from the TCPdemo code.
+                BluetoothSocket socket = null;
                 try {
-                    mkmsg("Attempting to receive a message ...\n");
-                    BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                    String str = in.readLine();
-                    mkmsg("received a message:\n" + str + "\n");
-
-                    PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
-                    mkmsg("Attempting to send message ...\n");
-
-                    socket.getOutputStream().write(console.signMessage(console.getProducer()));
-
-                    out.println("Hi from Bluetooth Demo Server");
-                    out.flush();
-                    mkmsg("Message sent...\n");
-
-                    mkmsg("We are done, closing connection\n");
-                } catch (Exception e) {
-                    mkmsg("Error happened sending/receiving\n");
-
-                } finally {
-                    try {
-                        socket.close();
-                    } catch (IOException e) {
-                        mkmsg("Unable to close socket" + e.getMessage() + "\n");
-                    }
+                    // This is a blocking call and will only return on a
+                    // successful connection or an exception
+                    socket = mmServerSocket.accept();
+                } catch (IOException e) {
+                    output("Failed to accept connection");
                 }
-            } else {
-                mkmsg("Made connection, but socket is null\n");
+
+                // If a connection was accepted
+                if (socket != null) {
+                    output("Connection established with " + socket.getRemoteDevice().getAddress());
+                    try {
+                        output("Attempting to read request");
+                        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                        String str = in.readLine();
+                        output("Received request for proof of location");
+
+                        output("Signing message and timestamp");
+                        //Generate sig //TODO
+
+                        output("Sending response");
+                        PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
+                        socket.getOutputStream().write(console.signMessage(console.getProducer()));
+
+                        //output("Hi from Bluetooth Demo Server"); //Message to
+                        out.flush();
+                        output("Response sent");
+
+                        output("Finished transaction, closing connection");
+                    } catch (Exception e) {
+                        output("Error occured sending/receiving");
+
+                    } finally {
+                        try {
+                            socket.close();
+                        } catch (IOException e) {
+                            output("Unable to close socket" + e.getMessage());
+                        }
+                    }
+                } else {
+                    output("Made connection, but socket is null");
+                }
+                //messageHandler.sendMessage("ser");
+                output("Server closing\n");
             }
-            mkmsg("Server ending \n");
         }
 
         public void cancel() {
             try {
                 mmServerSocket.close();
             } catch (IOException e) {
-                mkmsg( "close() of connect socket failed: "+e.getMessage() +"\n");
+                output("close() of connect socket failed: " + e.getMessage());
             }
         }
     }
+
 }

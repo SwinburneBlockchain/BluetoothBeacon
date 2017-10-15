@@ -46,8 +46,12 @@ public class MainActivity extends AppCompatActivity {
         bt.startBluetoothServer();
     }
 
-    private void initiateBluetooth() {
-
+    public void updateConsole(final String string) {
+        runOnUiThread(new Runnable() {
+            public void run() {
+                console.writeToConsole(string);
+            }
+        });
     }
 
     public void startAdmin(View view) {

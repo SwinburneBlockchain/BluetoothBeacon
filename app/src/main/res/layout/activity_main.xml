@@ -8,8 +8,8 @@
 
     <TextView
         android:id="@+id/consoleWindow"
-        android:layout_width="370dp"
-        android:layout_height="456dp"
+        android:layout_width="352dp"
+        android:layout_height="446dp"
         android:layout_marginTop="7dp"
         android:text="Console\n"
         android:textAlignment="viewStart"

@@ -2,6 +2,8 @@ package com.swinblockchain.bluetoothbeacon.Controller;
 
 import android.content.res.AssetManager;
 
+import android.util.Base64;
+import android.util.Base64InputStream;
 import android.widget.TextView;
 
 import com.swinblockchain.bluetoothbeacon.App;
@@ -28,6 +30,8 @@ public class Console {
     private Producer producer;
     private TextView consoleWindow;
     private final String message = "VALID_LOCATION";
+    private final static char[] hexArray = "0123456789abcdef".toCharArray();
+
 
     ArrayList<Producer> producerList = new ArrayList<>();
     ArrayList<String> producerStringList = new ArrayList<>();
@@ -45,6 +49,10 @@ public class Console {
             sig.update(data);
 
             byte[] signatureBytes = sig.sign();
+
+            System.out.println("SIGN IN :" + signatureBytes);
+            System.out.println("SIGN IN HEX:" + bytesToHex(signatureBytes));
+
             System.out.println("SIG UTF-8: " + signatureBytes.toString());
 
 
@@ -122,6 +130,20 @@ public class Console {
             }
         }
         return null;
+    }
+
+    public String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
+
+    public void writeToConsole(String string) {
+        getConsoleWindow().append(string + "\n");
     }
 
     public Producer getProducer() {
