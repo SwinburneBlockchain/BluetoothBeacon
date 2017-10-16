@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(final int requestCode, int resultCode, Intent intent) {
-        startServer();
+        startBluetoothServer();
     }
 
 
