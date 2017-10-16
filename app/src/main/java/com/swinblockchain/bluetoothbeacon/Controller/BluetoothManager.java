@@ -20,6 +20,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.digest.DigestUtils;
+
 
 /**
  * Created by John on 13/10/2017.
@@ -110,10 +113,12 @@ public class BluetoothManager {
 
                         output("Signing message and timestamp");
                         String sign = console.signMessage(console.getProducer());
+                        String timestamp = String.valueOf(System.currentTimeMillis());
+                        String hashOfData = new String(Hex.encodeHex(DigestUtils.sha256(sign + "," + console.getProducer().getPubKeyPEMString() + "," + timestamp)));
 
                         output("Sending response");
                         PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
-                        out.println(sign + "," + console.getProducer().getPubKeyPEMString());
+                        out.println(sign + "," + console.getProducer().getPubKeyPEMString() + "," + timestamp + "," + hashOfData);
 
                         out.flush();
                         output("Response sent");
