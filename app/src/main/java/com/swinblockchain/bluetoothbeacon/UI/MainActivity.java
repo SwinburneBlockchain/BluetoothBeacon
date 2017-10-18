@@ -59,7 +59,6 @@ public class MainActivity extends AppCompatActivity {
 
         console = new Console();
         consoleWindow = (TextView) findViewById(R.id.consoleWindow);
-        consoleWindow.setMovementMethod(new ScrollingMovementMethod());
         producerName = (TextView) findViewById(R.id.producerName);
         console.loadKeyFiles();
 
@@ -108,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(enableBtIntent, 1);
 
         } else {
+            output("Starting server");
             startServer();
         }
     }
@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
      */
     @Override
     protected void onActivityResult(final int requestCode, int resultCode, Intent intent) {
-        onCreate(null);
+        //startBluetoothServer();
     }
 
     /**
@@ -165,6 +165,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void startServer() {
         runningThread = new Thread(new AcceptThread());
+        output("Creating thread");
         runningThread.start();
     }
 
