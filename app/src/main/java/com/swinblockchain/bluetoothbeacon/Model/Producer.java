@@ -5,11 +5,11 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
- * Created by John on 12/10/2017.
+ * The producer object contains all information about a Producer
+ *
+ * @author John Humphrys
  */
-
 public class Producer {
 
     String name;

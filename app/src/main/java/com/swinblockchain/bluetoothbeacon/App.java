@@ -4,9 +4,10 @@ import android.app.Application;
 import android.content.Context;
 
 /**
- * Created by John on 3/10/2017.
+ * The App class is used to get the application context in awkward situations
+ *
+ * @author John Humphrys
  */
-
 public class App extends Application{
 
 

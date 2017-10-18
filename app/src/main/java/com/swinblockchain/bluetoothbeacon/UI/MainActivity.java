@@ -28,6 +28,11 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.UUID;
 
+/**
+ * The main activity that is presented to the user
+ *
+ * @author John Humphrys
+ */
 public class MainActivity extends AppCompatActivity {
 
     Console console;
@@ -42,6 +47,11 @@ public class MainActivity extends AppCompatActivity {
     public static final UUID MY_UUID = UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a66");
     public static final String NAME = "ProductChain";
 
+    /**
+     * Called when created
+     *
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
         producerName = (TextView) findViewById(R.id.producerName);
         console.loadKeyFiles();
 
+        // Check if started up or coming from admin activity
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
         if (extras != null) {
@@ -67,6 +78,11 @@ public class MainActivity extends AppCompatActivity {
         startBluetoothServer();
     }
 
+    /**
+     * Starts the admin activity
+     *
+     * @param view
+     */
     public void startAdmin(View view) {
         Intent i = new Intent(MainActivity.this, AdminActivity.class);
         i.putStringArrayListExtra("producerList", console.getProducerStringList());
@@ -74,8 +90,11 @@ public class MainActivity extends AppCompatActivity {
         startActivity(i);
     }
 
+    /**
+     * Starts the bluetooth server
+     */
     public void startBluetoothServer() {
-        //setup the bluetooth adapter.
+        // Setup the bluetooth adapter.
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         if (mBluetoothAdapter == null) {
@@ -83,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
             output("Bluetooth not supported");
             return;
         }
-        //make sure bluetooth is enabled.
+        // Make sure bluetooth is enabled.
         if (!mBluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, 1);
@@ -93,17 +112,31 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * When the activity returns, onCreate is called again
+     *
+     * @param requestCode
+     * @param resultCode
+     * @param intent
+     */
     @Override
     protected void onActivityResult(final int requestCode, int resultCode, Intent intent) {
-        startBluetoothServer();
+        onCreate(null);
     }
 
-
+    /**
+     * The handler method assists in displaying information to the console in the UI thread
+     */
     private Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
             try {
-                consoleWindow.setText(consoleWindow.getText() + sdf.format(System.currentTimeMillis()) + " " + msg.getData().getString("msg") + "\n");
+
+                if (msg.getData().getString("msg").equals("")) {
+                    consoleWindow.setText("");
+                } else {
+                    consoleWindow.setText(consoleWindow.getText() + sdf.format(System.currentTimeMillis()) + " " + msg.getData().getString("msg") + "\n");
+                }
                 System.out.println(msg.getData().getString("msg"));
                 return true;
             } catch (Exception e) {
@@ -114,8 +147,12 @@ public class MainActivity extends AppCompatActivity {
 
     });
 
+    /**
+     * Passes information to the handler
+     *
+     * @param str The string to pass to the handler
+     */
     public void output(String str) {
-        //handler junk, because thread can't update screen!
         Message msg = new Message();
         Bundle b = new Bundle();
         b.putString("msg", str);
@@ -123,16 +160,27 @@ public class MainActivity extends AppCompatActivity {
         handler.sendMessage(msg);
     }
 
+    /**
+     * Starts the bluetooth thread
+     */
     public void startServer() {
         runningThread = new Thread(new AcceptThread());
         runningThread.start();
     }
 
+    /**
+     * seeYaMate terminates a running thread
+     *
+     * @param thread The thread to say goodbye to
+     */
     private void seeYaMate(Thread thread) {
         thread.interrupt();
         thread = null;
     }
 
+    /**
+     * The Accept Thread accepts bluetooth requests for proof of location
+     */
     private class AcceptThread extends Thread {
         // The local server socket
         private final BluetoothServerSocket mmServerSocket;
@@ -149,9 +197,12 @@ public class MainActivity extends AppCompatActivity {
             mmServerSocket = tmp;
         }
 
+        /**
+         * The run thread opens a socket and waits for a connection
+         */
         public void run() {
             while (true) {
-                output("Bluetooth enabled, listening for connection");
+                output("Bluetooth enabled, listening and responding to requests");
 
                 BluetoothSocket socket = null;
                 try {
@@ -173,12 +224,11 @@ public class MainActivity extends AppCompatActivity {
 
                         output("Signing message and timestamp");
                         String sign = console.signMessage(console.getProducer());
-                        String timestamp = String.valueOf(System.currentTimeMillis());
-                        String hashOfData = new String(Hex.encodeHex(DigestUtils.sha256(sign + "," + console.getProducer().getPubKeyPEMString() + "," + timestamp)));
+                        String hashOfData = new String(Hex.encodeHex(DigestUtils.sha256(sign + "," + console.getProducer().getPubKeyPEMString() + "," + console.getTimestamp())));
 
                         output("Sending response");
                         PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
-                        out.println(sign + "," + console.getProducer().getPubKeyPEMString() + "," + timestamp + "," + hashOfData);
+                        out.println(sign + "," + console.getProducer().getPubKeyPEMString() + "," + console.getTimestamp() + "," + hashOfData);
 
                         out.flush();
                         output("Response sent");
@@ -202,6 +252,9 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        /**
+         * Stops the thread from running
+         */
         public void cancel() {
             try {
                 mmServerSocket.close();

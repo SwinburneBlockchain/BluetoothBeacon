@@ -14,11 +14,21 @@ import com.swinblockchain.bluetoothbeacon.R;
 
 import java.util.ArrayList;
 
+/**
+ * The AdminActivityallows a user to change the main producer
+ *
+ * @author John Humphrys
+ */
 public class AdminActivity extends AppCompatActivity {
 
     private ArrayList<String> producerNameList;
     Console console;
 
+    /**
+     * Run when the activty is created
+     *
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,12 +39,20 @@ public class AdminActivity extends AppCompatActivity {
         displayProducers();
     }
 
+    /**
+     * Displays all the producers in a table
+     */
     private void displayProducers() {
         for (String s : producerNameList) {
             createTableRow(s.toString());
         }
     }
 
+    /**
+     * Creates a table row with a producer name and button
+     *
+     * @param s The producers name
+     */
     private void createTableRow(final String s) {
 
         final TableLayout detailsTable = (TableLayout) findViewById(R.id.mainTable);
@@ -55,6 +73,11 @@ public class AdminActivity extends AppCompatActivity {
         detailsTable.addView(tableRow);
     }
 
+    /**
+     * Sends the information back to the main activity
+     *
+     * @param producerName The producer name the user has selected
+     */
     private void backToMain(String producerName) {
         Intent i = new Intent(AdminActivity.this, MainActivity.class);
         i.putExtra("producerName", producerName);

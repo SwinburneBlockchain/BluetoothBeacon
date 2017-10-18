@@ -27,9 +27,8 @@ import java.util.ArrayList;
 public class Console {
 
     private Producer producer;
-    String timestamp;
+    String timestamp = String.valueOf(System.currentTimeMillis());;
     private final static char[] hexArray = "0123456789abcdef".toCharArray();
-
 
     ArrayList<Producer> producerList = new ArrayList<>();
     ArrayList<String> producerStringList = new ArrayList<>();
@@ -37,10 +36,14 @@ public class Console {
     public Console() {
     }
 
+    /**
+     * Signs a message using the producers private key
+     *
+     * @param p The producer to use
+     * @return The string containing the sign
+     */
     public String signMessage(Producer p) {
         try {
-            timestamp = String.valueOf(System.currentTimeMillis());
-
             Signature sig = Signature.getInstance("SHA256withRSA");
             byte[] data = timestamp.getBytes("UTF8");
 
@@ -61,6 +64,9 @@ public class Console {
         }
     }
 
+    /**
+     * Loads all the key files from assets
+     */
     public void loadKeyFiles() {
         AssetManager assetManager = App.getContext().getAssets();
         InputStream input;
@@ -69,6 +75,7 @@ public class Console {
         try {
             String[] list = assetManager.list("");
 
+            // Check if is a valid key file
             for (String keyFile : list) {
                 if (keyFile.contains(".")) {
                     String[] keyFileArr = keyFile.split("\\.");
@@ -82,9 +89,8 @@ public class Console {
                                 prod = findProducer(keyFileArr[0]);
                             }
 
+                            // Store all types of keys in producer
                             try {
-                        /* Generate key. */
-
                                 if (keyFileArr[2].equals("pem")) {
 
                                     input = assetManager.open(keyFile);
@@ -110,7 +116,6 @@ public class Console {
                                         prod.setPubKeyPEMString(fullKey.toString());
                                 }
                                 if (keyFileArr[2].equals("der")) {
-                            /* Read all bytes from the private key file */
                                     input = assetManager.open(keyFile);
                                     byte[] bytes = new byte[input.available()];
                                     input.read(bytes);
@@ -145,6 +150,12 @@ public class Console {
         }
     }
 
+    /**
+     * Finds a producer in the producer list
+     *
+     * @param producerName The producer name to look for
+     * @return The found producer
+     */
     public Producer findProducer(String producerName) {
         for (Producer p : producerList) {
             if (producerName.equals(p.getName())) {
@@ -154,6 +165,12 @@ public class Console {
         return null;
     }
 
+    /**
+     * Converts bytes into hex
+     *
+     * @param bytes The bytes to convert
+     * @return The hex as a string
+     */
     public String bytesToHex(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
         for (int j = 0; j < bytes.length; j++) {
@@ -186,5 +203,13 @@ public class Console {
 
     public void setProducerStringList(ArrayList<String> producerStringList) {
         this.producerStringList = producerStringList;
+    }
+
+    public String getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(String timestamp) {
+        this.timestamp = timestamp;
     }
 }
