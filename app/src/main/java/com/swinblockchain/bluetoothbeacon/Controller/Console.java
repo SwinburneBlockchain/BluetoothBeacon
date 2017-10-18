@@ -2,19 +2,15 @@ package com.swinblockchain.bluetoothbeacon.Controller;
 
 import android.content.res.AssetManager;
 
-import android.util.Base64;
-import android.util.Base64InputStream;
 import android.widget.TextView;
 
 import com.swinblockchain.bluetoothbeacon.App;
 import com.swinblockchain.bluetoothbeacon.Model.Producer;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.InputStream;
 
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -23,33 +19,30 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 
-import static android.R.attr.data;
-import static android.R.attr.key;
-import static android.R.attr.publicKey;
-
 /**
- * Created by John on 12/10/2017.
+ * The Console class manages all keys in the system
+ *
+ * @author John Humphrys
  */
-
 public class Console {
 
     private Producer producer;
-    private TextView consoleWindow;
-    private final String message = "VALID_LOCATION";
+    String timestamp;
     private final static char[] hexArray = "0123456789abcdef".toCharArray();
 
 
     ArrayList<Producer> producerList = new ArrayList<>();
     ArrayList<String> producerStringList = new ArrayList<>();
 
-    public Console(TextView consoleWindow) {
-        this.consoleWindow = consoleWindow;
+    public Console() {
     }
 
     public String signMessage(Producer p) {
         try {
+            timestamp = String.valueOf(System.currentTimeMillis());
+
             Signature sig = Signature.getInstance("SHA256withRSA");
-            byte[] data = message.getBytes("UTF8");
+            byte[] data = timestamp.getBytes("UTF8");
 
             sig.initSign(p.getPrivKeyDER());
             sig.update(data);
@@ -171,10 +164,6 @@ public class Console {
         return new String(hexChars);
     }
 
-    public void writeToConsole(String string) {
-        getConsoleWindow().append(string + "\n");
-    }
-
     public Producer getProducer() {
         return producer;
     }
@@ -191,23 +180,11 @@ public class Console {
         this.producerList = producerList;
     }
 
-    public void log(String message) {
-        consoleWindow.append(message + "\n");
-    }
-
     public ArrayList<String> getProducerStringList() {
         return producerStringList;
     }
 
     public void setProducerStringList(ArrayList<String> producerStringList) {
         this.producerStringList = producerStringList;
-    }
-
-    public TextView getConsoleWindow() {
-        return consoleWindow;
-    }
-
-    public void setConsoleWindow(TextView consoleWindow) {
-        this.consoleWindow = consoleWindow;
     }
 }

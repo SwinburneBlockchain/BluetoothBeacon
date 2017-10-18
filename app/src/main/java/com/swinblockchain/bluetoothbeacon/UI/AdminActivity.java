@@ -9,6 +9,7 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import com.swinblockchain.bluetoothbeacon.Controller.Console;
 import com.swinblockchain.bluetoothbeacon.R;
 
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 public class AdminActivity extends AppCompatActivity {
 
     private ArrayList<String> producerNameList;
+    Console console;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +25,7 @@ public class AdminActivity extends AppCompatActivity {
         setContentView(R.layout.activity_admin);
 
         producerNameList = getIntent().getExtras().getStringArrayList("producerList");
+        console = getIntent().getParcelableExtra("console");
         displayProducers();
     }
 

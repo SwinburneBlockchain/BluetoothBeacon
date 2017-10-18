@@ -1,7 +1,6 @@
 package com.swinblockchain.bluetoothbeacon.UI;
 
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
@@ -9,10 +8,12 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.TextView;
 
 import com.swinblockchain.bluetoothbeacon.Controller.Console;
+import com.swinblockchain.bluetoothbeacon.Model.Producer;
 import com.swinblockchain.bluetoothbeacon.R;
 
 import org.apache.commons.codec.binary.Hex;
@@ -31,7 +32,9 @@ public class MainActivity extends AppCompatActivity {
 
     Console console;
     TextView producerName;
-    BluetoothManager bt;
+    Producer currProducer;
+    Thread runningThread;
+    TextView consoleWindow;
 
     BluetoothAdapter mBluetoothAdapter = null;
     SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
@@ -44,7 +47,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        console = new Console((TextView) findViewById(R.id.consoleWindow));
+        console = new Console();
+        consoleWindow = (TextView) findViewById(R.id.consoleWindow);
+        consoleWindow.setMovementMethod(new ScrollingMovementMethod());
         producerName = (TextView) findViewById(R.id.producerName);
         console.loadKeyFiles();
 
@@ -53,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         if (extras != null) {
             if (extras.containsKey("producerName")) {
                 console.setProducer(console.findProducer(extras.getString("producerName")));
-                producerName.setText("Producer: " + extras.getString("producerName"));
+                producerName.setText(console.getProducer().getName());
             }
         }
 
@@ -62,17 +67,10 @@ public class MainActivity extends AppCompatActivity {
         startBluetoothServer();
     }
 
-    public void updateConsole(final String string) {
-        runOnUiThread(new Runnable() {
-            public void run() {
-                console.writeToConsole(string);
-            }
-        });
-    }
-
     public void startAdmin(View view) {
         Intent i = new Intent(MainActivity.this, AdminActivity.class);
         i.putStringArrayListExtra("producerList", console.getProducerStringList());
+        seeYaMate(runningThread);
         startActivity(i);
     }
 
@@ -101,12 +99,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     private Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
-            console.writeToConsole(sdf.format(System.currentTimeMillis()) + " " + msg.getData().getString("msg"));
-            return true;
+            try {
+                consoleWindow.setText(consoleWindow.getText() + sdf.format(System.currentTimeMillis()) + " " + msg.getData().getString("msg") + "\n");
+                System.out.println(msg.getData().getString("msg"));
+                return true;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
         }
 
     });
@@ -121,7 +124,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startServer() {
-        new Thread(new AcceptThread()).start();
+        runningThread = new Thread(new AcceptThread());
+        runningThread.start();
+    }
+
+    private void seeYaMate(Thread thread) {
+        thread.interrupt();
+        thread = null;
     }
 
     private class AcceptThread extends Thread {
@@ -201,5 +210,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
 
 }
