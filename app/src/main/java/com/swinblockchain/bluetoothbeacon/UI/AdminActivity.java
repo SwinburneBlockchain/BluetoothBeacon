@@ -13,7 +13,12 @@ import com.swinblockchain.bluetoothbeacon.Controller.Console;
 import com.swinblockchain.bluetoothbeacon.R;
 
 import java.util.ArrayList;
-
+/*
+  Swinburne Capstone Project - ICT90004
+  Aidan Beale & John Humphrys
+  https://github.com/SwinburneBlockchain
+*/
+  
 /**
  * The AdminActivityallows a user to change the main producer
  *
